@@ -1,0 +1,280 @@
+CLI
+
+  popeye lorem ipsum dolorem
+  ---     ---------------
+    |           \
+    |            \
+  app call        \
+                command given to popeye
+                should be human friendly (natural language like)
+
+  popeye "papp dezső 3 láda alma"
+
+  popeye @anya befizeti a globalgap-et #gn/globalgap !till:2022-09-01
+
+  > Ok 3712
+
+  popeye %3712 @anya befizeti a globalgap-et #gn/globalgap !till:2022-09-01
+
+  > Updated 3712
+
+  popeye #csalad/szulinap22/torta_rendeles
+
+  popeye 
+  pp
+
+  popeye ..
+
+    Open popeye interactive
+
+  popeye > ls porjects
+  popeye > ls users
+  popeye > 
+
+workspace
+  project
+    task
+      owner
+      description
+      duedate
+
+workspace/project/subproject
+  task
+    owner
+    description
+    duedate
+
+popeye add
+  lorem ipsum dolorem set ami
+  loerm ami set dolorem
+  done
+
+
+Task
+  id
+  owner
+  status
+  duedate
+  title
+  description
+  estimated
+ 
+workspace
+  project
+   sprint
+      item
+        Flexible state (can be anything)
+          :Task
+          :Note
+          :User Story
+          :Backlog
+          :Issue
+          :Sprint
+          :Milestone
+
+           struct Item {
+             id: ItemId,                  // i64
+             parent_id: ItemId,           // i64
+             sprint_id: SprintId,         // String / Hexadecimal i64 string
+             type: Option<ItemType>,      // Task | Note | UserStory | BacklogItem | Issue | Milestone
+             size: Option<Size>,          // Hour(i32) | StoryPoint(i32)
+             remaining: Option<Size>,     // same as above
+             title: Option<String>,       // Optional
+             description: Option<String>, // Optional
+             priority: Option<Priority>,  // 1 | 2 | 3
+             owner: Option<UserId>,       //
+             start_after: Option<ItemId>, // Waterflow or general guard
+             deadline: Option<NaiveDate>, // 
+             created_at: DateTime<Utc>,   //
+             created_by: UserId,          //
+           }
+
+1) Layout
+
+  Working with popeye we have workspace to separate each different working
+area. Inside a workspace we work with projects. Project has its name ID
+and we use them for identification.
+
+  ExampleWorkspace / ProjectName
+
+2) Log
+
+2022-08-16T19:45:23:00000 mezeipetister set gz/store/349/title Lorem ipsum dolorem set ami
+2022-08-16T19:45:23:00000 mezeipetister set gz/store/349/priority 3
+2022-08-16T19:45:23:00000 mezeipetister set gz/store/349/owner kriszta916
+2022-08-16T19:45:23:00000 mezeipetister set gz/store/349/deadline 2022-08-19
+
+2) CLI
+
+  popeye nw // new workspace
+         np // new project
+         nn // new note
+         nt // new task
+         ns // new user story
+         nb // new backlog
+         ni // new issue
+
+  popeye ni gz/store példa issue
+
+  popeye
+  popeye> ni gz/store példa issue
+
+  popeye gz/store
+  popeye gz/store> ni
+  popeye gz/store> issue name?
+  popeye gz/store> lorem ipsum
+  popeye gz/store> issue description?
+  popeye gz/store> lorem ipsum
+  popeye gz/store> attributes?
+  popeye gz/store> till/may19 !!! @me %4h
+
+  popeye gz/store#2
+  popeye gn22/őszi_karbantartás
+  popeye gn22/növényvédelem#48
+  popeye gn22/növényvédelem#48> levélminták az SGS-nek // >tomorrow !!! @me %2h
+
+  popeye levélminták az SGS-nek // >tomorrow !!! @me %2h
+
+  > popeye levélminták az SGS-nek // till tomorrow; important; by me; estimated 2h
+  > Ok #34
+
+  > popeye set 
+
+yo add "hello bello" gz/website         // add "hello bello" item to gz/website
+yo add task "hello bello" > gz/website  // Add a task called "hello bello" to gz/website
+yo add note "hello bello" > gz/website  // Add note "hello bello" to gz/website
+yo set type note > gz/website/12        // Set type to be note to the item 12 inside gz/website
+yo set gz/website/12 type note \
+  duedate tomorrow owner me
+yo close gz/website                     // close gz/website; status set to be closed; no edit after it
+yo open gz/website                      // open gz/website; set status to be opened; editable after it
+yo ls gz/website                        // list gz/website
+yo reindex gz/website                   // reindex gz/website
+yo checkout gz/website                  // checkout gz/website
+yo me                                   // List all of my tasks
+yo check                                // Check the given repository
+yo set 41 remaining 8h                  // Set item 41
+
+yo run set project name to hello
+yo set project name to hello
+yo set item #2 name to hello
+yo add +sale 
+yo ls all
+yo ls @me
+
+
+
+item
+project
+user
+workspace
+
+Log
+
+  TIMESTAMP USERNAME COMMAND
+  2022-09-02T11:49:25.22Z mezeipetister "32 set type note"
+                                        "project set name "
+  2022-09-02T11:49:25.22Z mezeipetister gz INIT
+  2022-09-02T11:49:25.22Z mezeipetister gz SET pname "Lorem ipsum dolorem"
+  2022-09-02T11:49:25.22Z mezeipetister gz ICREATE #322451324a3ef
+  2022-09-02T11:49:25.22Z mezeipetister SET #322451324a3ef owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister SET #322451324a3ef duedate 2022-09-03T12:00:00.000
+
+  INIT   - Init project
+  CREATE - Create task item
+  SET    - Set task item
+
+  2022-09-02T11:49:25.22Z mezeipetister gz/profile SET owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister gz/a9c47a03-60b1-478a-b6dd-417d8a657505 SET owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister gz/a9c47a03-60b1-478a-b6dd-417d8a657505 SET duedate 2022-09-04T00:00:00.000
+
+  2022-09-02T11:49:25.22Z mezeipetister profile SET owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister a9c47a03-60b1-478a-b6dd-417d8a657505 SET owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister a9c47a03-60b1-478a-b6dd-417d8a657505 SET duedate 2022-09-04T00:00:00.000
+
+  2022-09-02T11:49:25.22Z mezeipetister SET profile owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister SET a9c47a03-60b1-478a-b6dd-417d8a657505 owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister SET a9c47a03-60b1-478a-b6dd-417d8a657505 duedate 2022-09-04T00:00:00.000
+  2022-09-02T11:49:25.22Z mezeipetister CREATE 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d
+  2022-09-02T11:49:25.22Z mezeipetister SET 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d priority 3
+  2022-09-02T11:49:25.22Z mezeipetister SET 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d owner mezeipetister
+  2022-09-02T11:49:25.22Z mezeipetister SET 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d size 12p; priority 1; duedate 
+  2022-09-02T11:49:25.22Z mezeipetister LOG 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d spent 1h; remaining 3p
+
+yo set #12 duedate tomorrow
+yo set profile title Hello bello mi a helyzet?
+yo create
+> created #34
+yo set #34 owner mezeipetister; duedate tomorrow; priority 1; size 4p; parent #12; title Mosó csövet vásárolni
+yo set #34 type Task
+yo create note
+> create #35 (note)
+
+MVP
+
+  db location is at ~/.popeyedb
+
+
+--
+
+  3 alap művelet:
+    
+    CREATE UUID                       - Create new task item with the given uuid
+    SET TASK_ID/PROFILE [key, value]  - Set attribute list for the given TaskID
+    LOG TASK_ID [key, value]          - Add log entry for a given TaskID
+
+  Example log:
+
+    2022-09-02T11:49:25.22Z mezeipetister CREATE 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d
+    2022-09-02T11:49:25.22Z mezeipetister SET 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d priority 3
+    2022-09-02T11:49:25.22Z mezeipetister SET 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d owner mezeipetister
+    2022-09-02T11:49:25.22Z mezeipetister SET 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d size 12p; priority 1; duedate 
+    2022-09-02T11:49:25.22Z mezeipetister LOG 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d spent 1h; remaining 3p
+
+    56f311dd-9fdb-4141-b6fd-42ef0270bd27 2022-09-02T11:49:25.22Z mezeipetister CREATE 0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d
+
+    Log item UUID                         Entry datetime RFC3339    Entry userid   Command  Parameter list
+    ------------------------------------  -----------------------   -------------  -------  ------------------------------------
+    56f311dd-9fdb-4141-b6fd-42ef0270bd27  2022-09-02T11:49:25.22Z   mezeipetister  CREATE   0f93c3c0-d035-4ce3-9fa3-7b93048c8f6d
+    7a0454ce-9c8b-46dd-ba49-27867e46d6d5  2022-09-02T11:50:25.22Z   mezeipetister  SET      owner mezeipetister; size 12p; priority 1;
+    d38d3666-192a-4751-8a0a-855e3defdff8  2022-09-02T11:51:00.03Z   mezeipetister  LOG      spent 1h; remaining 3p
+
+  FS
+
+    ../project_root/  - Any path that is a project folder
+      .yo/            - Root contains .yo db folder
+        .yolog        - Log; human readable
+        .yodb         - Project db
+      *.*             - Project folder can contains any other files or folders
+
+  Commands
+
+    create *ID*
+    set *ID*
+      title       String
+      description String
+      size        Size
+      remaining   Size
+      spent       Size::Hour
+      priority    Priority
+      owner       Owner
+      duedate     Date
+      kind        Kind
+    log *ID*
+      spent       Size::Hour
+      remaining   Size
+      message     String
+
+    struct Project {}
+    struct TaskItem {}  <--\
+    struct Entry {}  <-----/
+    struct Command
+
+    create  -> Command::Create
+    set     -> Command::Set
+    log     -> Command::Log
+
+    Command -> Entry
+    Entry -> add to Project DB
+    Entry -> add to entry log
+    Entry log -> Parse -> Entry[]

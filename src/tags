@@ -1,0 +1,45 @@
+!_TAG_FILE_SORTED	2	/0=unsorted, 1=sorted, 2=foldcase/
+BacklogItem	/home/petermezei/projects/popeye/src/item.rs	/^    BacklogItem,$/;"	e	language:Rust	enum:ItemKind
+created_at	/home/petermezei/projects/popeye/src/item.rs	/^    created_at: DateTime<Utc>,   \/\/$/;"	m	language:Rust	struct:Item
+created_at	/home/petermezei/projects/popeye/src/item.rs	/^    created_at: DateTime<Utc>,$/;"	m	language:Rust	struct:LogItem
+created_by	/home/petermezei/projects/popeye/src/item.rs	/^    created_by: UserId,          \/\/$/;"	m	language:Rust	struct:Item
+created_by	/home/petermezei/projects/popeye/src/item.rs	/^    created_by: UserId,$/;"	m	language:Rust	struct:LogItem
+deadline	/home/petermezei/projects/popeye/src/item.rs	/^    deadline: Option<NaiveDate>, \/\/$/;"	m	language:Rust	struct:Item
+description	/home/petermezei/projects/popeye/src/item.rs	/^    description: Option<String>, \/\/ Optional$/;"	m	language:Rust	struct:Item
+Hour	/home/petermezei/projects/popeye/src/item.rs	/^    Hour(i32),$/;"	e	language:Rust	enum:Size
+hours_spent	/home/petermezei/projects/popeye/src/item.rs	/^    hours_spent: f32,$/;"	m	language:Rust	struct:LogItem
+hour_spent	/home/petermezei/projects/popeye/src/item.rs	/^    hour_spent: f32,             \/\/ Hours spent on this item; calculated by sum of log$/;"	m	language:Rust	struct:Item
+I	/home/petermezei/projects/popeye/src/item.rs	/^    I,$/;"	e	language:Rust	enum:Priority
+id	/home/petermezei/projects/popeye/src/item.rs	/^    id: ItemId,                  \/\/ i64$/;"	m	language:Rust	struct:Item
+id	/home/petermezei/projects/popeye/src/item.rs	/^    id: Uuid,$/;"	m	language:Rust	struct:LogItem
+II	/home/petermezei/projects/popeye/src/item.rs	/^    II,$/;"	e	language:Rust	enum:Priority
+III	/home/petermezei/projects/popeye/src/item.rs	/^    III,$/;"	e	language:Rust	enum:Priority
+Issue	/home/petermezei/projects/popeye/src/item.rs	/^    Issue,$/;"	e	language:Rust	enum:ItemKind
+Item	/home/petermezei/projects/popeye/src/item.rs	/^struct Item {$/;"	s	language:Rust
+item	/home/petermezei/projects/popeye/src/main.rs	/^mod item;$/;"	n	language:Rust
+ItemId	/home/petermezei/projects/popeye/src/item.rs	/^struct ItemId(i64);$/;"	s	language:Rust
+ItemKind	/home/petermezei/projects/popeye/src/item.rs	/^enum ItemKind {$/;"	g	language:Rust
+item_kind	/home/petermezei/projects/popeye/src/item.rs	/^    item_kind: Option<ItemKind>, \/\/ Task | Note | UserStory | BacklogItem | Issue | Milestone$/;"	m	language:Rust	struct:Item
+log	/home/petermezei/projects/popeye/src/item.rs	/^    log: Vec<LogItem>,           \/\/ Log item$/;"	m	language:Rust	struct:Item
+LogItem	/home/petermezei/projects/popeye/src/item.rs	/^struct LogItem {$/;"	s	language:Rust
+log_message	/home/petermezei/projects/popeye/src/item.rs	/^    log_message: String,$/;"	m	language:Rust	struct:LogItem
+main	/home/petermezei/projects/popeye/src/main.rs	/^fn main() {$/;"	f	language:Rust
+Milestone	/home/petermezei/projects/popeye/src/item.rs	/^    Milestone,$/;"	e	language:Rust	enum:ItemKind
+Note	/home/petermezei/projects/popeye/src/item.rs	/^    Note,$/;"	e	language:Rust	enum:ItemKind
+owner	/home/petermezei/projects/popeye/src/item.rs	/^    owner: Option<UserId>,       \/\/$/;"	m	language:Rust	struct:Item
+parent_id	/home/petermezei/projects/popeye/src/item.rs	/^    parent_id: ItemId,           \/\/ i64$/;"	m	language:Rust	struct:Item
+priority	/home/petermezei/projects/popeye/src/item.rs	/^    priority: Option<Priority>,  \/\/ 1 | 2 | 3$/;"	m	language:Rust	struct:Item
+Priority	/home/petermezei/projects/popeye/src/item.rs	/^enum Priority {$/;"	g	language:Rust
+remaining	/home/petermezei/projects/popeye/src/item.rs	/^    remaining: Option<Size>,     \/\/ same as above$/;"	m	language:Rust	struct:Item
+remaining_size	/home/petermezei/projects/popeye/src/item.rs	/^    remaining_size: Size,$/;"	m	language:Rust	struct:LogItem
+size	/home/petermezei/projects/popeye/src/item.rs	/^    size: Option<Size>,          \/\/ Hour(i32) | StoryPoint(i32)$/;"	m	language:Rust	struct:Item
+Size	/home/petermezei/projects/popeye/src/item.rs	/^enum Size {$/;"	g	language:Rust
+SprintId	/home/petermezei/projects/popeye/src/item.rs	/^struct SprintId(i64);$/;"	s	language:Rust
+sprint_id	/home/petermezei/projects/popeye/src/item.rs	/^    sprint_id: SprintId,         \/\/ String \/ Hexadecimal i64 string$/;"	m	language:Rust	struct:Item
+start_after	/home/petermezei/projects/popeye/src/item.rs	/^    start_after: Option<ItemId>, \/\/ Waterflow or general guard$/;"	m	language:Rust	struct:Item
+StoryPoint	/home/petermezei/projects/popeye/src/item.rs	/^    StoryPoint(i32),$/;"	e	language:Rust	enum:Size
+Task	/home/petermezei/projects/popeye/src/item.rs	/^    Task,$/;"	e	language:Rust	enum:ItemKind
+title	/home/petermezei/projects/popeye/src/item.rs	/^    title: Option<String>,       \/\/ Optional$/;"	m	language:Rust	struct:Item
+UserId	/home/petermezei/projects/popeye/src/item.rs	/^struct UserId(String);$/;"	s	language:Rust
+UserStory	/home/petermezei/projects/popeye/src/item.rs	/^    UserStory,$/;"	e	language:Rust	enum:ItemKind
+Workspace	/home/petermezei/projects/popeye/src/item.rs	/^struct Workspace {}$/;"	s	language:Rust
