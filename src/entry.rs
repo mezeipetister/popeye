@@ -5,6 +5,10 @@ use uuid::Uuid;
 
 use crate::item::{Date, ItemKind, ItemParameter, LogParameter, Priority, Size, UserId};
 
+fn uuid_from_str(s: &str) -> Result<Uuid, String> {
+    Uuid::from_str(s).map_err(|_| "Wrong item ID format. Must be UUID".to_string())
+}
+
 #[derive(PartialEq, Debug)]
 pub enum Parameter {
     Title(String),
@@ -60,6 +64,7 @@ impl FromStr for Parameter {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub enum SetKind {
     Project,
     Item(Uuid),
@@ -74,6 +79,7 @@ impl Display for SetKind {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub enum EntryKind {
     Create {
         id: Uuid,
@@ -116,10 +122,49 @@ impl Display for EntryKind {
     }
 }
 
+impl FromStr for EntryKind {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let v = s.split_whitespace().collect::<Vec<&str>>();
+        let cmd_str = v.get(0).ok_or("No cmd found".to_string())?;
+        let id = v.get(1).ok_or("No id found".to_string())?;
+        let _params = v[2..].join(" ");
+        let _params = _params.split(";").collect::<Vec<&str>>();
+        let mut params = Vec::new();
+        for p in _params {
+            if p.len() > 0 {
+                params.push(Parameter::from_str(p)?);
+            }
+        }
+        match *cmd_str {
+            "create" | "CREATE" => Ok(Self::Create {
+                id: uuid_from_str(id)?,
+            }),
+            "set" | "SET" => match *id {
+                "project" => Ok(Self::Set {
+                    kind: SetKind::Project,
+                    params,
+                }),
+                _ => Ok(Self::Set {
+                    kind: SetKind::Item(uuid_from_str(id)?),
+                    params,
+                }),
+            },
+            "log" | "LOG" => Ok(Self::Log {
+                id: uuid_from_str(id)?,
+                params,
+            }),
+            _ => Err("Unkown entrykind".to_string()),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub struct LogEntry {
     id: Uuid,
     userid: String,
-    date: DateTime<Utc>,
+    date: Date,
     entry_kind: EntryKind,
 }
 
@@ -129,10 +174,28 @@ impl Display for LogEntry {
             f,
             "{} {} {} {}",
             self.id.as_simple(),
-            self.date.to_rfc3339(),
+            self.date,
             &self.userid,
             self.entry_kind
         )
+    }
+}
+
+impl FromStr for LogEntry {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let v = s.split_whitespace().collect::<Vec<&str>>();
+        let id = uuid_from_str(v.get(0).ok_or("No ID found".to_string())?)?;
+        let date = Date::from_str(v.get(1).ok_or("No date found".to_string())?)?;
+        let userid = v.get(2).ok_or("No userid found".to_string())?.to_string();
+        let entry_kind = EntryKind::from_str(&v[3..].join(" "))?;
+        Ok(Self {
+            id,
+            userid,
+            date,
+            entry_kind,
+        })
     }
 }
 
@@ -145,7 +208,7 @@ mod tests {
     #[test]
     fn entry_to_string() {
         let id = Uuid::new_v4();
-        let date = Utc::now();
+        let date = Date::now();
         let entry = LogEntry {
             id,
             userid: "mezeipetister".to_string(),
@@ -155,7 +218,7 @@ mod tests {
         let t = format!(
             "{} {} {} CREATE {}",
             id.as_simple(),
-            date.to_rfc3339(),
+            date,
             "mezeipetister",
             id.as_simple()
         );
@@ -176,9 +239,30 @@ mod tests {
         let t = format!(
             "{} {} {} SET {} title Hello bello;priority 1",
             id.as_simple(),
-            date.to_rfc3339(),
+            date,
             "mezeipetister",
             id.as_simple()
+        );
+        assert_eq!(t, entry.to_string());
+
+        let entry = LogEntry {
+            id,
+            userid: "mezeipetister".to_string(),
+            date: date,
+            entry_kind: EntryKind::Set {
+                kind: SetKind::Project,
+                params: vec![
+                    Parameter::Title("Hello bello".to_string()),
+                    Parameter::Priority(Priority::I),
+                ],
+            },
+        };
+        let t = format!(
+            "{} {} {} SET {} title Hello bello;priority 1",
+            id.as_simple(),
+            date,
+            "mezeipetister",
+            "project"
         );
         assert_eq!(t, entry.to_string());
 
@@ -197,7 +281,7 @@ mod tests {
         let t = format!(
             "{} {} {} LOG {} spent 2h;remaining 4p",
             id.as_simple(),
-            date.to_rfc3339(),
+            date,
             "mezeipetister",
             id.as_simple()
         );
@@ -219,5 +303,61 @@ mod tests {
             Parameter::from_str(&format!("duedate {}", n.to_rfc3339())).unwrap(),
             Parameter::Duedate(Date::new(n))
         );
+    }
+
+    #[test]
+    fn log_entry_write_parse() {
+        let id = Uuid::new_v4();
+        let date = Date::now();
+        let entry = LogEntry {
+            id,
+            userid: "mezeipetister".to_string(),
+            date,
+            entry_kind: EntryKind::Create { id },
+        };
+        let result = LogEntry::from_str(&entry.to_string()).unwrap();
+        assert_eq!(entry, result);
+
+        let entry = LogEntry {
+            id,
+            userid: "mezeipetister".to_string(),
+            date: date,
+            entry_kind: EntryKind::Set {
+                kind: SetKind::Item(id),
+                params: vec![
+                    Parameter::Title("Hello bello".to_string()),
+                    Parameter::Priority(Priority::I),
+                ],
+            },
+        };
+        let result = LogEntry::from_str(&entry.to_string()).unwrap();
+        assert_eq!(entry, result);
+
+        let entry = LogEntry {
+            id,
+            userid: "mezeipetister".to_string(),
+            date: date,
+            entry_kind: EntryKind::Set {
+                kind: SetKind::Project,
+                params: vec![Parameter::Title("Hello bello".to_string())],
+            },
+        };
+        let result = LogEntry::from_str(&entry.to_string()).unwrap();
+        assert_eq!(entry, result);
+
+        let entry = LogEntry {
+            id,
+            userid: "mezeipetister".to_string(),
+            date,
+            entry_kind: EntryKind::Log {
+                id,
+                params: vec![
+                    Parameter::Spent(Size::Hour(2)),
+                    Parameter::Remaining(Size::StoryPoint(4)),
+                ],
+            },
+        };
+        let result = LogEntry::from_str(&entry.to_string()).unwrap();
+        assert_eq!(entry, result);
     }
 }
