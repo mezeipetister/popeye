@@ -1,20 +1,34 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{fmt::Display, path::PathBuf, str::FromStr};
 
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-struct Date(DateTime<Utc>);
+#[derive(PartialEq, Debug)]
+pub struct Date(DateTime<Utc>);
 
-impl ToString for Date {
-    fn to_string(&self) -> String {
-        self.0.to_rfc3339()
+impl Display for Date {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.to_rfc3339())
+    }
+}
+
+impl FromStr for Date {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let d = DateTime::parse_from_rfc3339(s)
+            .map_err(|_| "Wrong date format. Only RFC339 acceptable".to_string())?;
+        Ok(Self(DateTime::from(d)))
     }
 }
 
 impl Date {
-    fn now() -> Self {
+    pub fn now() -> Self {
         Self(Utc::now())
+    }
+    pub fn new(d: DateTime<Utc>) -> Self {
+        Self(d)
     }
 }
 
@@ -45,8 +59,8 @@ struct LogItem {
     created_by: UserId,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-enum ItemKind {
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub enum ItemKind {
     Task,
     Note,
     UserStory,
@@ -85,10 +99,10 @@ impl FromStr for ItemKind {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
 struct ItemId(i64);
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
 struct SprintId(i64);
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -139,7 +153,7 @@ impl Default for Size {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum Priority {
     I,
     II,
@@ -176,8 +190,8 @@ impl Default for Priority {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
-struct UserId(String);
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct UserId(pub String);
 
 impl ToString for UserId {
     fn to_string(&self) -> String {
