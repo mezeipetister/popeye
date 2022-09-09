@@ -172,6 +172,18 @@ pub struct LogEntry {
 }
 
 impl LogEntry {
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+    pub fn userid(&self) -> &str {
+        &self.userid
+    }
+    pub fn date(&self) -> &Date {
+        &self.date
+    }
+    pub fn entry_kind(&self) -> &EntryKind {
+        &self.entry_kind
+    }
     pub fn from_user_input(i: &UserInput, cmd_str: &str) -> Result<Self, String> {
         let entry_kind = EntryKind::from_str(cmd_str)?;
         Ok(Self {

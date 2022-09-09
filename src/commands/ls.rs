@@ -7,11 +7,11 @@ use crate::{
     entry::LogEntry,
 };
 
-pub struct Create;
+pub struct List;
 
-impl CommandExt for Create {
+impl CommandExt for List {
     fn name(&self) -> &'static str {
-        "create"
+        "ls"
     }
 
     fn procedure(
@@ -20,12 +20,6 @@ impl CommandExt for Create {
         ctx: &Context,
         cmd: &UserInput,
     ) -> Result<String, String> {
-        let params = cmd.param_str();
-        let entry = LogEntry::from_user_input(
-            &cmd,
-            &format!("create {}", Uuid::new_v4().as_simple().to_string()),
-        )?;
-        db.add_entry(entry)?;
-        Ok("Ok".to_string())
+        Ok(format!("{:?}", db.items()))
     }
 }

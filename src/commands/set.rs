@@ -11,7 +11,7 @@ pub struct Create;
 
 impl CommandExt for Create {
     fn name(&self) -> &'static str {
-        "create"
+        "set"
     }
 
     fn procedure(
@@ -21,10 +21,7 @@ impl CommandExt for Create {
         cmd: &UserInput,
     ) -> Result<String, String> {
         let params = cmd.param_str();
-        let entry = LogEntry::from_user_input(
-            &cmd,
-            &format!("create {}", Uuid::new_v4().as_simple().to_string()),
-        )?;
+        let entry = LogEntry::from_user_input(&cmd, &cmd.param_str().ok_or("")?)?;
         db.add_entry(entry)?;
         Ok("Ok".to_string())
     }

@@ -4,8 +4,16 @@ use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::entry::LogEntry;
+
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Date(DateTime<Utc>);
+
+impl Date {
+    pub fn date_time_utc(&self) -> DateTime<Utc> {
+        self.0
+    }
+}
 
 impl Display for Date {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -47,6 +55,16 @@ pub struct Item {
     duedate: Option<NaiveDate>,  //
     created_at: DateTime<Utc>,   //
     created_by: UserId,          //
+}
+
+impl Item {
+    pub fn new(id: Uuid, created_at: DateTime<Utc>, created_by: String) -> Self {
+        let mut r = Item::default();
+        r.id = ItemId(id);
+        r.created_at = created_at;
+        r.created_by = UserId(created_by);
+        r
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -100,7 +118,7 @@ impl FromStr for ItemKind {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
-struct ItemId(i64);
+struct ItemId(Uuid);
 
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
 struct SprintId(i64);
