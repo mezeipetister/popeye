@@ -3,7 +3,10 @@ use std::{fmt::Display, str::FromStr};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use crate::item::{Date, ItemKind, ItemParameter, LogParameter, Priority, Size, UserId};
+use crate::{
+    command::UserInput,
+    item::{Date, ItemKind, ItemParameter, LogParameter, Priority, Size, UserId},
+};
 
 fn uuid_from_str(s: &str) -> Result<Uuid, String> {
     Uuid::from_str(s).map_err(|_| "Wrong item ID format. Must be UUID".to_string())
@@ -166,6 +169,18 @@ pub struct LogEntry {
     userid: String,
     date: Date,
     entry_kind: EntryKind,
+}
+
+impl LogEntry {
+    pub fn from_user_input(i: &UserInput, cmd_str: &str) -> Result<Self, String> {
+        let entry_kind = EntryKind::from_str(cmd_str)?;
+        Ok(Self {
+            id: i.id().to_owned(),
+            userid: i.userid().to_string(),
+            date: i.date().to_owned(),
+            entry_kind,
+        })
+    }
 }
 
 impl Display for LogEntry {
