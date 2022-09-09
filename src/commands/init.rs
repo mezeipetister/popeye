@@ -23,6 +23,7 @@ impl CommandExt for Init {
         if ctx.is_project_path() {
             return Err("Already a Yo project path".to_string());
         }
-        Ok(format!("Ok"))
+        let db = Project::init(ctx)?;
+        Ok(format!("Project initialized at {:?}", ctx.current_dir()))
     }
 }

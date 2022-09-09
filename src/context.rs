@@ -41,6 +41,9 @@ impl Context {
     pub fn current_dir(&self) -> &PathBuf {
         &self.current_dir
     }
+    pub fn current_project_path(&self) -> Option<&PathBuf> {
+        self.current_project_path.as_ref()
+    }
     pub fn is_project_path(&self) -> bool {
         self.is_project_path
     }
