@@ -3,22 +3,7 @@ use std::fmt::Display;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use crate::{db::Project, item::Date};
-
-pub struct Context {
-    username: String,
-}
-
-impl Context {
-    pub fn new() -> Self {
-        Self {
-            username: "mezeipetister".to_string(),
-        }
-    }
-    pub fn username(&self) -> &str {
-        &self.username
-    }
-}
+use crate::{context::Context, db::Project, item::Date};
 
 #[derive(Debug)]
 pub struct UserInput {

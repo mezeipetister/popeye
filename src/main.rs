@@ -1,11 +1,12 @@
-use command::{CommandExt, Context};
+use command::CommandExt;
 use commands::{version::*, Create};
 use db::Project;
 
-use crate::command::UserInput;
+use crate::{command::UserInput, context::Context};
 
 mod command;
 mod commands;
+mod context;
 mod db;
 mod display;
 mod entry;
@@ -36,8 +37,8 @@ fn main() -> Result<(), String> {
     }
     let user_args = user_args[1..].join(" ");
     let commands: Vec<Box<dyn CommandExt>> = vec![Box::new(Create), Box::new(Version)];
-    let mut db = Project::new();
     let ctx = Context::new();
+    let mut db = Project::init(&ctx);
     let user_input = UserInput::new(&user_args, &ctx);
 
     let res = process_input(&user_input, commands, &mut db)?;
