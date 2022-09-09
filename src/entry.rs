@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     command::UserInput,
-    item::{Date, ItemKind, ItemParameter, LogParameter, Priority, Size, UserId},
+    item::{Date, ItemKind, ItemParameter, LogParameter, Priority, Size, Status, UserId},
 };
 
 fn uuid_from_str(s: &str) -> Result<Uuid, String> {
@@ -24,6 +24,7 @@ pub enum Parameter {
     Duedate(Date),
     Kind(ItemKind),
     Message(String),
+    Status(Status),
 }
 
 impl Display for Parameter {
@@ -39,6 +40,7 @@ impl Display for Parameter {
             Parameter::Duedate(c) => ("duedate", c.to_string()),
             Parameter::Kind(c) => ("kind", c.to_string()),
             Parameter::Message(c) => ("message", c.to_string()),
+            Parameter::Status(c) => ("status", c.to_string()),
         };
         write!(f, "{} {}", key, value)
     }
@@ -62,6 +64,7 @@ impl FromStr for Parameter {
             "duedate" => Ok(Self::Duedate(Date::from_str(&param)?)),
             "kind" => Ok(Self::Kind(ItemKind::from_str(&param)?)),
             "message" => Ok(Self::Message(param)),
+            "status" => Ok(Self::Status(Status::from_str(&param)?)),
             _ => Err("Unkown parameter".to_string()),
         }
     }

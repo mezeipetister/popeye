@@ -40,6 +40,42 @@ impl Date {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum Status {
+    New,
+    InProgress,
+    Done,
+}
+
+impl Default for Status {
+    fn default() -> Self {
+        Self::New
+    }
+}
+
+impl Display for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Status::New => write!(f, "new"),
+            Status::InProgress => write!(f, "progress"),
+            Status::Done => write!(f, "done"),
+        }
+    }
+}
+
+impl FromStr for Status {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "new" => Ok(Self::New),
+            "progress" | "inprogress" => Ok(Self::InProgress),
+            "done" => Ok(Self::Done),
+            _ => Err("Unknown status".to_string()),
+        }
+    }
+}
+
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Item {
     pub id: Uuid,                // i64
@@ -53,6 +89,7 @@ pub struct Item {
     priority: Option<Priority>,  // 1 | 2 | 3
     owner: Option<UserId>,       //
     duedate: Option<NaiveDate>,  //
+    status: Status,              // Item Status
     created_at: DateTime<Utc>,   //
     created_by: UserId,          //
 }
@@ -73,6 +110,7 @@ impl Display for Item {
                 None => "-".to_string(),
             }
         ));
+        res.push(format!("status: {}", self.status));
         write!(f, "{}", res.join("\n"))
     }
 }
@@ -113,6 +151,7 @@ impl Item {
                             crate::entry::Parameter::Kind(kind) => {
                                 self.item_kind = Some(kind.clone())
                             }
+                            crate::entry::Parameter::Status(status) => self.status = status.clone(),
                             _ => (),
                         }
                     }
