@@ -22,6 +22,9 @@ fn process_input<T>(
 where
     T: CommandExt + ?Sized,
 {
+    if ctx.args().len() == 0 {
+        return Ok("Yo :)".to_string());
+    }
     for c in commands {
         if let Some(res) = c.try_call(db, ctx, user_input) {
             return res;

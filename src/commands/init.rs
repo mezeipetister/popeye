@@ -20,7 +20,9 @@ impl CommandExt for Init {
         ctx: &Context,
         cmd: &UserInput,
     ) -> Result<String, String> {
-        // let res = db.init()?;
+        if ctx.is_project_path() {
+            return Err("Already a Yo project path".to_string());
+        }
         Ok(format!("Ok"))
     }
 }

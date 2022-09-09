@@ -10,8 +10,8 @@ pub struct UserInput {
     id: Uuid,
     date: Date,
     userid: String,
-    cmd_str: String,
-    param_str: String,
+    cmd_str: Option<String>,
+    param_str: Option<String>,
 }
 
 impl UserInput {
@@ -21,8 +21,11 @@ impl UserInput {
             id: Uuid::new_v4(),
             date: Date::now(),
             userid: ctx.username().to_string(),
-            cmd_str: cmd_tokens.get(0).unwrap_or_else(|| &"").to_string(),
-            param_str: cmd_tokens[1..].join(" "),
+            cmd_str: cmd_tokens.get(0).map(|cmd| cmd.to_string()),
+            param_str: match cmd_tokens.len() > 1 {
+                true => Some(cmd_tokens[1..].join(" ")),
+                false => None,
+            },
         }
     }
     pub fn id(&self) -> &Uuid {
@@ -34,21 +37,27 @@ impl UserInput {
     pub fn userid(&self) -> &str {
         &self.userid
     }
-    pub fn cmd_str(&self) -> &str {
-        &self.cmd_str
+    pub fn cmd_str(&self) -> Option<&str> {
+        self.cmd_str.as_deref()
     }
-    pub fn param_str(&self) -> &str {
-        &self.param_str
+    pub fn param_str(&self) -> Option<&str> {
+        self.param_str.as_deref()
     }
     pub fn param_id(&self) -> Option<&str> {
-        self.param_str
-            .split_whitespace()
-            .collect::<Vec<&str>>()
-            .get(0)
-            .map(|i| *i)
+        match self.param_str() {
+            Some(p) => p
+                .split_whitespace()
+                .collect::<Vec<&str>>()
+                .get(0)
+                .map(|i| *i),
+            None => None,
+        }
     }
     pub fn param_list(&self) -> Vec<&str> {
-        self.param_str.split_whitespace().collect::<Vec<&str>>()
+        self.param_str()
+            .unwrap_or("")
+            .split_whitespace()
+            .collect::<Vec<&str>>()
     }
 }
 
@@ -66,7 +75,7 @@ pub trait CommandExt {
         ctx: &Context,
         user_input: &UserInput,
     ) -> Option<Result<String, String>> {
-        if self.name() == user_input.cmd_str() {
+        if self.name() == user_input.cmd_str().unwrap_or(&"".to_string()) {
             return Some(self.procedure(db, ctx, user_input));
         }
         None
