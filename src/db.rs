@@ -25,18 +25,22 @@ impl Details {
 }
 
 pub struct Project {
-    path: PathBuf,
     details: Details,
     items: Vec<Item>,
 }
 
 impl Project {
-    pub fn init(ctx: &Context) -> Self {
-        Self {
-            path: ctx.current_dir().to_owned(),
+    pub fn init(ctx: &Context) -> Result<Self, String> {
+        if ctx.is_project_path() {
+            return Err("Path already a Yo project!".to_string());
+        }
+        todo!()
+    }
+    pub fn load(ctx: &Context) -> Result<Self, String> {
+        Ok(Self {
             details: Details::default(),
             items: Vec::new(),
-        }
+        })
     }
     pub fn detials(&self) -> &Details {
         &self.details
@@ -48,6 +52,12 @@ impl Project {
         self.reset();
     }
     pub fn add_entry(&mut self, entry: LogEntry) -> Result<(), String> {
+        todo!()
+    }
+    fn save_details(&self) -> Result<(), String> {
+        todo!()
+    }
+    fn save_items(&self) -> Result<(), String> {
         todo!()
     }
 }

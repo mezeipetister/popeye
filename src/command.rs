@@ -15,8 +15,8 @@ pub struct UserInput {
 }
 
 impl UserInput {
-    pub fn new(cmd_line: &str, ctx: &Context) -> Self {
-        let cmd_tokens = cmd_line.split_whitespace().collect::<Vec<&str>>();
+    pub fn new(ctx: &Context) -> Self {
+        let cmd_tokens = ctx.args().split_whitespace().collect::<Vec<&str>>();
         Self {
             id: Uuid::new_v4(),
             date: Date::now(),
@@ -54,10 +54,20 @@ impl UserInput {
 
 pub trait CommandExt {
     fn name(&self) -> &'static str;
-    fn procedure(&self, db: &mut Project, user_input: &UserInput) -> Result<String, String>;
-    fn try_call(&self, user_input: &UserInput, db: &mut Project) -> Option<Result<String, String>> {
+    fn procedure(
+        &self,
+        db: &mut Project,
+        ctx: &Context,
+        user_input: &UserInput,
+    ) -> Result<String, String>;
+    fn try_call(
+        &self,
+        db: &mut Project,
+        ctx: &Context,
+        user_input: &UserInput,
+    ) -> Option<Result<String, String>> {
         if self.name() == user_input.cmd_str() {
-            return Some(self.procedure(db, user_input));
+            return Some(self.procedure(db, ctx, user_input));
         }
         None
     }
@@ -69,7 +79,7 @@ mod tests {
 
     #[test]
     fn new_command() {
-        let c = UserInput::new("set 7 owner mezeipetister priority 3", &Context::new());
+        let c = UserInput::new(&Context::new());
         println!("{:?}", c);
         assert_eq!(1, 1);
     }

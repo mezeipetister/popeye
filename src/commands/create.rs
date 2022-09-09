@@ -2,6 +2,7 @@ use uuid::Uuid;
 
 use crate::{
     command::{CommandExt, UserInput},
+    context::Context,
     db::Project,
     entry::LogEntry,
 };
@@ -13,7 +14,12 @@ impl CommandExt for Create {
         "create"
     }
 
-    fn procedure(&self, db: &mut Project, cmd: &UserInput) -> Result<String, String> {
+    fn procedure(
+        &self,
+        db: &mut Project,
+        ctx: &Context,
+        cmd: &UserInput,
+    ) -> Result<String, String> {
         let params = cmd.param_str();
         let res = LogEntry::from_user_input(
             &cmd,

@@ -1,14 +1,17 @@
+use uuid::Uuid;
+
 use crate::{
     command::{CommandExt, UserInput},
     context::Context,
     db::Project,
+    entry::LogEntry,
 };
 
-pub struct Version;
+pub struct Init;
 
-impl CommandExt for Version {
+impl CommandExt for Init {
     fn name(&self) -> &'static str {
-        "version"
+        "init"
     }
 
     fn procedure(
@@ -17,6 +20,7 @@ impl CommandExt for Version {
         ctx: &Context,
         cmd: &UserInput,
     ) -> Result<String, String> {
-        Ok(format!("{}", ctx.yo_version()))
+        // let res = db.init()?;
+        Ok(format!("Ok"))
     }
 }
