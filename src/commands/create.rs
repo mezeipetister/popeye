@@ -25,7 +25,7 @@ impl CommandExt for Create {
             &cmd,
             &format!("create {}", Uuid::new_v4().as_simple().to_string()),
         )?;
-        db.add_entry(entry)?;
+        db.add_entry_public(entry, ctx)?;
         Ok("Ok".to_string())
     }
 }

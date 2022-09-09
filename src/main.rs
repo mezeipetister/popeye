@@ -45,7 +45,8 @@ fn force_init(ctx: &Context, user_input: &UserInput) -> Result<(), String> {
 
 fn main() -> Result<(), String> {
     // Add commands to work with
-    let commands: Vec<Box<dyn CommandExt>> = commands![Create, Version, Init, List];
+    let commands: Vec<Box<dyn CommandExt>> =
+        commands![Create, Version, Init, List, Reindex, ResetDb, Set];
     // Init context
     let ctx = Context::new();
     // Get user input

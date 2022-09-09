@@ -7,9 +7,9 @@ use crate::{
     entry::LogEntry,
 };
 
-pub struct Create;
+pub struct Set;
 
-impl CommandExt for Create {
+impl CommandExt for Set {
     fn name(&self) -> &'static str {
         "set"
     }
@@ -22,7 +22,7 @@ impl CommandExt for Create {
     ) -> Result<String, String> {
         let params = cmd.param_str();
         let entry = LogEntry::from_user_input(&cmd, &cmd.param_str().ok_or("")?)?;
-        db.add_entry(entry)?;
+        db.add_entry_public(entry, ctx)?;
         Ok("Ok".to_string())
     }
 }

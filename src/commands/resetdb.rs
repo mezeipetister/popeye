@@ -7,11 +7,11 @@ use crate::{
     entry::LogEntry,
 };
 
-pub struct Reindex;
+pub struct ResetDb;
 
-impl CommandExt for Reindex {
+impl CommandExt for ResetDb {
     fn name(&self) -> &'static str {
-        "reindex"
+        "resetdb"
     }
 
     fn procedure(
@@ -21,7 +21,7 @@ impl CommandExt for Reindex {
         cmd: &UserInput,
     ) -> Result<String, String> {
         let params = cmd.param_str();
-        db.reindex(ctx)?;
+        db.reset()?;
         Ok("Ok".to_string())
     }
 }

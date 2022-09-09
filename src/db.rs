@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 use std::ops::Deref;
+use std::str::FromStr;
 use std::{fmt::Display, path::PathBuf};
 
 use crate::{
@@ -48,6 +49,12 @@ impl Project {
         };
         p.save_details()?;
         p.save_items()?;
+
+        let log_path = &ctx.current_dir().join(".yo").join("log");
+        if !log_path.exists() {
+            std::fs::File::create(&log_path).unwrap();
+        }
+
         Ok(p)
     }
     pub fn load(ctx: &Context) -> Result<Self, String> {
@@ -60,16 +67,21 @@ impl Project {
     pub fn detials(&self) -> &Details {
         &self.details
     }
-    fn reset(&mut self) -> Result<(), String> {
+    pub fn reset(&mut self) -> Result<(), String> {
+        self.details = Details::default();
         self.items = Vec::new();
-        self.save_items()?;
+        self.save_db()?;
         Ok(())
     }
-    pub fn reindex(&mut self) -> Result<(), String> {
+    pub fn reindex(&mut self, ctx: &Context) -> Result<(), String> {
         self.reset()?;
+        let entries = self.load_entries(ctx)?;
+        for e in entries {
+            self.add_entry(&e, ctx)?;
+        }
         Ok(())
     }
-    pub fn add_entry(&mut self, entry: LogEntry) -> Result<(), String> {
+    fn add_entry(&mut self, entry: &LogEntry, ctx: &Context) -> Result<(), String> {
         let entry_kind = entry.entry_kind();
         match entry_kind {
             crate::entry::EntryKind::Create { id } => {
@@ -83,6 +95,12 @@ impl Project {
             _ => (),
         }
         self.save_items()?;
+        Ok(())
+    }
+
+    pub fn add_entry_public(&mut self, entry: LogEntry, ctx: &Context) -> Result<(), String> {
+        self.add_entry(&entry, ctx)?;
+        Self::save_log(ctx, &entry)?;
         Ok(())
     }
     pub fn items(&self) -> &Vec<Item> {
@@ -121,5 +139,35 @@ impl Project {
         )
         .unwrap();
         Ok(bincode::deserialize(&content).unwrap())
+    }
+    fn save_db(&self) -> Result<(), String> {
+        self.save_details()?;
+        self.save_items()?;
+        Ok(())
+    }
+    fn save_log(ctx: &Context, entry: &LogEntry) -> Result<(), String> {
+        let p = &ctx.current_project_path().unwrap().join(".yo").join("log");
+        if !p.exists() {
+            std::fs::File::create(&p).unwrap();
+        }
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(&p)
+            .unwrap();
+
+        writeln!(file, "{}", entry).map_err(|_| "Error writing log!".to_string())?;
+        Ok(())
+    }
+    fn load_entries(&self, ctx: &Context) -> Result<Vec<LogEntry>, String> {
+        let mut entries = Vec::new();
+        let content =
+            std::fs::read_to_string(ctx.current_project_path().unwrap().join(".yo").join("log"))
+                .unwrap();
+        for line in content.lines() {
+            let entry = LogEntry::from_str(&line)?;
+            entries.push(entry);
+        }
+        Ok(entries)
     }
 }
