@@ -12,6 +12,7 @@ pub struct UserInput {
     userid: String,
     cmd_str: Option<String>,
     param_str: Option<String>,
+    params_raw: String,
 }
 
 impl UserInput {
@@ -26,6 +27,7 @@ impl UserInput {
                 true => Some(cmd_tokens[1..].join(" ")),
                 false => None,
             },
+            params_raw: cmd_tokens.join(" "),
         }
     }
     pub fn id(&self) -> &Uuid {
@@ -58,6 +60,9 @@ impl UserInput {
             .unwrap_or("")
             .split_whitespace()
             .collect::<Vec<&str>>()
+    }
+    pub fn params_raw(&self) -> &str {
+        &self.params_raw
     }
 }
 

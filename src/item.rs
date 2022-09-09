@@ -1,10 +1,10 @@
-use std::{fmt::Display, path::PathBuf, str::FromStr};
+use std::{fmt::Display, ops::Deref, path::PathBuf, str::FromStr};
 
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::entry::LogEntry;
+use crate::entry::{LogEntry, SetKind};
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Date(DateTime<Utc>);
@@ -42,7 +42,7 @@ impl Date {
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Item {
-    id: ItemId,                  // i64
+    pub id: Uuid,                // i64
     item_kind: Option<ItemKind>, // Task | Note | UserStory | BacklogItem | Issue | Milestone
     size: Option<Size>,          // Hour(i32) | StoryPoint(i32)
     remaining: Option<Size>,     // same as above
@@ -57,13 +57,73 @@ pub struct Item {
     created_by: UserId,          //
 }
 
+impl Display for Item {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut res = Vec::new();
+        res.push(format!("title: {}", self.title.as_deref().unwrap_or("-")));
+        res.push(format!(
+            "description: {}",
+            self.description.as_deref().unwrap_or("-")
+        ));
+        res.push(format!("owner: {}", self.owner.as_deref().unwrap_or("-")));
+        res.push(format!(
+            "duedate: {}",
+            match self.duedate {
+                Some(d) => d.to_string(),
+                None => "-".to_string(),
+            }
+        ));
+        write!(f, "{}", res.join("\n"))
+    }
+}
+
 impl Item {
     pub fn new(id: Uuid, created_at: DateTime<Utc>, created_by: String) -> Self {
         let mut r = Item::default();
-        r.id = ItemId(id);
+        r.id = id;
         r.created_at = created_at;
         r.created_by = UserId(created_by);
         r
+    }
+    pub fn set_entry(&mut self, entry: &LogEntry) -> Result<(), String> {
+        match entry.entry_kind() {
+            crate::entry::EntryKind::Set { kind, params } => {
+                if let SetKind::Item(_) = kind {
+                    for param in params {
+                        match param {
+                            crate::entry::Parameter::Title(title) => {
+                                self.title = Some(title.to_owned())
+                            }
+                            crate::entry::Parameter::Description(desc) => {
+                                self.description = Some(desc.to_owned())
+                            }
+                            crate::entry::Parameter::Size(size) => self.size = Some(size.clone()),
+                            crate::entry::Parameter::Remaining(remaining) => {
+                                self.remaining = Some(remaining.clone())
+                            }
+                            crate::entry::Parameter::Priority(priority) => {
+                                self.priority = Some(priority.clone())
+                            }
+                            crate::entry::Parameter::Owner(owner) => {
+                                self.owner = Some(owner.clone())
+                            }
+                            crate::entry::Parameter::Duedate(duedate) => {
+                                self.duedate = Some(duedate.0.date_naive())
+                            }
+                            crate::entry::Parameter::Kind(kind) => {
+                                self.item_kind = Some(kind.clone())
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+            }
+            _ => (),
+        }
+        Ok(())
+    }
+    pub fn title(&self) -> Option<&str> {
+        self.title.as_deref()
     }
 }
 
@@ -77,7 +137,7 @@ struct LogItem {
     created_by: UserId,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub enum ItemKind {
     Task,
     Note,
@@ -87,8 +147,8 @@ pub enum ItemKind {
     Milestone,
 }
 
-impl ToString for ItemKind {
-    fn to_string(&self) -> String {
+impl Display for ItemKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let value = match self {
             ItemKind::Task => "task",
             ItemKind::Note => "note",
@@ -97,7 +157,7 @@ impl ToString for ItemKind {
             ItemKind::Issue => "issue",
             ItemKind::Milestone => "milestone",
         };
-        format!("kind {}", value)
+        write!(f, "kind {}", value)
     }
 }
 
@@ -118,24 +178,24 @@ impl FromStr for ItemKind {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
-struct ItemId(Uuid);
+pub struct ItemId(Uuid);
 
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
 struct SprintId(i64);
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub enum Size {
     Unknown,
     Hour(i32),
     StoryPoint(i32),
 }
 
-impl ToString for Size {
-    fn to_string(&self) -> String {
+impl Display for Size {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Size::Unknown => panic!("Unknown command should not be printed!"),
-            Size::Hour(h) => format!("{}h", h),
-            Size::StoryPoint(p) => format!("{}p", p),
+            Size::Hour(h) => write!(f, "{}h", h),
+            Size::StoryPoint(p) => write!(f, "{}p", p),
         }
     }
 }
@@ -171,21 +231,21 @@ impl Default for Size {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub enum Priority {
     I,
     II,
     III,
 }
 
-impl ToString for Priority {
-    fn to_string(&self) -> String {
+impl Display for Priority {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let value = match self {
             Priority::I => 1,
             Priority::II => 2,
             Priority::III => 3,
         };
-        format!("{}", value)
+        write!(f, "{}", value)
     }
 }
 
@@ -208,12 +268,20 @@ impl Default for Priority {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone)]
 pub struct UserId(pub String);
 
-impl ToString for UserId {
-    fn to_string(&self) -> String {
-        self.0.to_string()
+impl Display for UserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Deref for UserId {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -241,18 +309,18 @@ pub enum ItemParameter {
     Kind(ItemKind),
 }
 
-impl ToString for ItemParameter {
-    fn to_string(&self) -> String {
+impl Display for ItemParameter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ItemParameter::Title(t) => format!("title {}", t.to_owned()),
-            ItemParameter::Description(t) => format!("description {}", t.to_string()),
-            ItemParameter::Size(s) => format!("size {}", s.to_string()),
-            ItemParameter::Remaining(r) => format!("remaining {}", r.to_string()),
-            ItemParameter::Spent(s) => format!("spent {}", s.to_string()),
-            ItemParameter::Priority(p) => format!("priority {}", p.to_string()),
-            ItemParameter::Owner(o) => format!("owner {}", o.to_string()),
-            ItemParameter::Duedate(d) => format!("duedate {}", d.to_string()),
-            ItemParameter::Kind(k) => format!("kind {}", k.to_string()),
+            ItemParameter::Title(t) => write!(f, "title {}", t.to_owned()),
+            ItemParameter::Description(t) => write!(f, "description {}", t.to_string()),
+            ItemParameter::Size(s) => write!(f, "size {}", s.to_string()),
+            ItemParameter::Remaining(r) => write!(f, "remaining {}", r.to_string()),
+            ItemParameter::Spent(s) => write!(f, "spent {}", s.to_string()),
+            ItemParameter::Priority(p) => write!(f, "priority {}", p.to_string()),
+            ItemParameter::Owner(o) => write!(f, "owner {}", o.to_string()),
+            ItemParameter::Duedate(d) => write!(f, "duedate {}", d.to_string()),
+            ItemParameter::Kind(k) => write!(f, "kind {}", k.to_string()),
         }
     }
 }
@@ -295,17 +363,17 @@ pub enum LogParameter {
     Message(String),
 }
 
-impl ToString for LogParameter {
-    fn to_string(&self) -> String {
+impl Display for LogParameter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            LogParameter::Spent(s) => format!("spent {}", s.to_string()),
-            LogParameter::Remaining(r) => format!("remaining {}", r.to_string()),
-            LogParameter::Message(m) => format!("message {}", m.to_string()),
+            LogParameter::Spent(s) => write!(f, "spent {}", s.to_string()),
+            LogParameter::Remaining(r) => write!(f, "remaining {}", r.to_string()),
+            LogParameter::Message(m) => write!(f, "message {}", m.to_string()),
         }
     }
 }
 
-fn params_to_string<T: ToString>(params: &Vec<T>) -> String {
+fn params_to_string<T: Display>(params: &Vec<T>) -> String {
     let mut res = String::new();
     let mut first = false;
     params.iter().for_each(|p| {
@@ -380,16 +448,18 @@ impl EntryCommand {
     }
 }
 
-impl ToString for EntryCommand {
-    fn to_string(&self) -> String {
+impl Display for EntryCommand {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            EntryCommand::Create { item_id } => format!("CREATE {}", item_id.as_hyphenated()),
-            EntryCommand::Set { item_id, params } => format!(
+            EntryCommand::Create { item_id } => write!(f, "CREATE {}", item_id.as_hyphenated()),
+            EntryCommand::Set { item_id, params } => write!(
+                f,
                 "SET {} {}",
                 item_id.as_hyphenated(),
                 params_to_string(params)
             ),
-            EntryCommand::Log { item_id, params } => format!(
+            EntryCommand::Log { item_id, params } => write!(
+                f,
                 "LOG {} {}",
                 item_id.as_hyphenated(),
                 params_to_string(params)

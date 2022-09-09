@@ -92,9 +92,22 @@ impl Project {
                 );
                 self.items.push(item);
             }
+            crate::entry::EntryKind::Set { kind, params } => {
+                match kind {
+                    crate::entry::SetKind::Project => (), // Todo! Implement project set methods
+                    crate::entry::SetKind::Item(id) => {
+                        let mut item = self
+                            .items
+                            .iter_mut()
+                            .find(|i| i.id == *id)
+                            .ok_or("Item with given ID not found".to_string())?;
+                        item.set_entry(entry)?;
+                    }
+                }
+            }
             _ => (),
         }
-        self.save_items()?;
+        self.save_db()?;
         Ok(())
     }
 
@@ -169,5 +182,8 @@ impl Project {
             entries.push(entry);
         }
         Ok(entries)
+    }
+    pub fn get_item_id_by_pos(&self, pos: usize) -> Option<Uuid> {
+        self.items.get(pos).map(|i| i.id)
     }
 }

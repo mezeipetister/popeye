@@ -22,6 +22,6 @@ impl CommandExt for Reindex {
     ) -> Result<String, String> {
         let params = cmd.param_str();
         db.reindex(ctx)?;
-        Ok("Ok".to_string())
+        Ok("Reindex done".to_string())
     }
 }

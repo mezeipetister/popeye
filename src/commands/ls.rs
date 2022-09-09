@@ -1,3 +1,4 @@
+use std::io::Write;
 use uuid::Uuid;
 
 use crate::{
@@ -20,6 +21,13 @@ impl CommandExt for List {
         ctx: &Context,
         cmd: &UserInput,
     ) -> Result<String, String> {
-        Ok(format!("{:?}", db.items()))
+        let mut res = Vec::new();
+        for (index, item) in db.items().iter().enumerate() {
+            res.push(format!("{} {}", index, item.title().unwrap_or("-")));
+        }
+        Ok(match res.len() > 0 {
+            true => res.join("\n"),
+            false => "Project is empty".to_string(),
+        })
     }
 }

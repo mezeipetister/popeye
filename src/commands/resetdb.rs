@@ -22,6 +22,6 @@ impl CommandExt for ResetDb {
     ) -> Result<String, String> {
         let params = cmd.param_str();
         db.reset()?;
-        Ok("Ok".to_string())
+        Ok("Database reseted".to_string())
     }
 }

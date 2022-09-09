@@ -316,7 +316,7 @@ mod tests {
     }
 
     #[test]
-    fn prama_parse() {
+    fn param_parse() {
         assert_eq!(
             Parameter::from_str("size 2p").unwrap(),
             Parameter::Size(Size::StoryPoint(2))
